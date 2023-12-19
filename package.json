@@ -1,0 +1,21 @@
+{
+  "name": "@ithdev/tu-ruc-js-client",
+  "version": "0.0.1",
+  "description": "Cliente Javascript para la API de TuRuc Paraguay",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "turuc",
+    "paraguay",
+    "razon",
+    "social"
+  ],
+  "author": "Sebastian Alvarez, Esteban Fernandez",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}
