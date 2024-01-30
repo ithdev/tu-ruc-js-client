@@ -13,7 +13,7 @@
     "razon",
     "social"
   ],
-  "author": "Sebastian Alvarez, Esteban Fernandez",
+  "author": "Sebastian Alvarez, Esteban Fernandez, Matias Ramirez",
   "license": "ISC",
   "devDependencies": {
     "jest": "^29.7.0"
