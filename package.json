@@ -4,8 +4,8 @@
   "description": "Cliente Javascript para la API de TuRuc Paraguay",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "test": "jest"
   },
   "keywords": [
     "turuc",
@@ -14,5 +14,8 @@
     "social"
   ],
   "author": "Sebastian Alvarez, Esteban Fernandez",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }
