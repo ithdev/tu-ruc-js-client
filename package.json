@@ -1,6 +1,6 @@
 {
   "name": "tu-ruc-js-client",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Cliente Javascript para la API de TuRuc Paraguay",
   "main": "src/index.js",
   "scripts": {
