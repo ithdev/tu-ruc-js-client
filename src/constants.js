@@ -1,3 +1,3 @@
-const URL = "https://turuc.com.py/api/contribuyente/search";
+const URL = "https://turuc.com.py/api/contribuyente";
 
 module.exports = { URL };
