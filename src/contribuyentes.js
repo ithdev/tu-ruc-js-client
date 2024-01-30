@@ -6,10 +6,10 @@ async function getContribuyenteBySearch(search, offset = 0) {
     !search ||
     search.trim() === "" ||
     search.length < 3 ||
-    search.length > 11
+    search.length > 10
   ) {
     throw new CustomError(
-      "El parámetro search es inválido. Debe tener entre 3 y 11 caracteres."
+      "El parámetro search es inválido. Debe tener entre 3 y 10 caracteres."
     );
   }
 
@@ -66,9 +66,9 @@ async function getContribuyenteBySearch(search, offset = 0) {
 }
 
 async function getContribuyenteByRucOrCI(ruc) {
-  if (!ruc || ruc.trim() === "" || ruc.length < 3 || ruc.length > 11) {
+  if (!ruc || ruc.trim() === "" || ruc.length < 3 || ruc.length > 10) {
     throw new CustomError(
-      "El parámetro ruc es inválido. Debe tener entre 3 y 11 caracteres."
+      "El parámetro ruc es inválido. Debe tener entre 3 y 10 caracteres."
     );
   }
 
