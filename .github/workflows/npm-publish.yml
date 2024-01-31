@@ -30,7 +30,7 @@ jobs:
         run: |
             echo "Creating Release $VERSION"
             CODE=$(
-                curl  --location https://api.github.com/repos/scodp/scodp-web/releases --write-out '%{http_code}' --output /dev/null \
+                curl  --location https://api.github.com/repos/ithdev/tu-ruc-js-client/releases --write-out '%{http_code}' --output /dev/null \
                     --header "Accept: application/vnd.github+json" \
                     --header "Authorization: Bearer $GITHUB_TOKEN" --data "{\"tag_name\": \"$VERSION\",\"target_commitish\": \"main\",\"name\": \"SCODP WEB Release $VERSION\",\"body\": \"SCODP WEB Release $VERSION\",\"draft\": false,\"prerelease\": false,\"generate_release_notes\":false}"
             )
