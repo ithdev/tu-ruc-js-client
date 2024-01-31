@@ -1,0 +1,74 @@
+name: CI/CD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  tag-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Get Version
+        id: get-version
+        uses: beaconbrigade/package-json-version@v0.3.1
+        with:
+          path: .
+      - name: Create Tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.get-version.outputs.version }}
+          REPOSITORY: ${{ github.repository }}
+          PROJECT_NAME: Tu RUC Js Client
+        run: |
+          echo "Creating tag $VERSION on $REPOSITORY"
+          git config --local user.email "develop.ith@gmail.com"
+          git config --local user.name "dev"
+          git tag -a $VERSION -m "$PROJECT_NAME Release $VERSION"
+          git push origin $VERSION
+      - name: Create Release
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            VERSION: ${{ steps.get-version.outputs.version }}
+            REPOSITORY: ${{ github.repository }}
+            PROJECT_NAME: Tu RUC Js Client
+        run: |
+            echo "Creating Release $VERSION"
+            CODE=$(
+                curl  --location https://api.github.com/repos/$REPOSITORY/releases --write-out '%{http_code}' --output /dev/null \
+                    --header "Accept: application/vnd.github+json" \
+                    --header "Authorization: Bearer $GITHUB_TOKEN" --data "{\"tag_name\": \"$VERSION\",\"target_commitish\": \"main\",\"name\": \"$PROJECT_NAME Release $VERSION\",\"body\": \"$PROJECT_NAME Release $VERSION\",\"draft\": false,\"prerelease\": false,\"generate_release_notes\":false}"
+            )
+            if [ $CODE -eq 201 ];
+            then
+                echo "SUCCESS - $CODE"
+                exit 0
+            else
+                echo "FAILURE - $CODE"
+                exit 1
+            fi
+
+  build:
+    needs: tag-and-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: npm test
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
