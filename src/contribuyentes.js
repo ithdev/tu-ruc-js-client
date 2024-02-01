@@ -1,10 +1,10 @@
-const { URL } = require("./constants");
+const { URL, MAX_LENGTH, MIN_LENGTH } = require("./constants");
 const { CustomError } = require("./errors");
 
 /**
  * Realiza una búsqueda de contribuyentes por un término específico y opcionalmente con un offset de paginación.
  *
- * @param {string} search - Término de búsqueda (entre 3 y 10 caracteres).
+ * @param {string} search - Término de búsqueda (entre 3 y 50 caracteres).
  * @param {number} [offset=0] - Offset de paginación, por defecto es 0.
  * @returns {Promise<Array>} - Una promesa que se resuelve con un array de contribuyentes si la búsqueda es exitosa.
  *
@@ -36,11 +36,11 @@ async function getContribuyenteBySearch(search, offset = 0) {
   if (
     !search ||
     search.trim() === "" ||
-    search.length < 3 ||
-    search.length > 10
+    search.length < MIN_LENGTH ||
+    search.length > MAX_LENGTH
   ) {
     throw new CustomError(
-      "El parámetro search es inválido. Debe tener entre 3 y 10 caracteres."
+      `El parámetro search es inválido. Debe tener entre ${MIN_LENGTH} y ${MAX_LENGTH} caracteres.`
     );
   }
 
@@ -67,7 +67,7 @@ async function getContribuyenteBySearch(search, offset = 0) {
 
       if (response.status > 400 && response.status < 500) {
         throw new CustomError(
-          "El parámetro search es inválido. Debe tener entre 3 y 11 caracteres.",
+          `El parámetro search es inválido. Debe tener entre ${MIN_LENGTH} y ${MAX_LENGTH} caracteres.`,
           contribuyentesJsonResponse?.message || ""
         );
       }
@@ -99,7 +99,7 @@ async function getContribuyenteBySearch(search, offset = 0) {
 /**
  * Obtiene información detallada sobre un contribuyente específico a través de su número de RUC o CI.
  *
- * @param {string} ruc - Número de RUC o CI del contribuyente (entre 3 y 10 caracteres).
+ * @param {string} ruc - Número de RUC o CI del contribuyente (^\d{1,8}(?:-\d)?$).
  * @returns {Promise<Object>} - Una promesa que se resuelve con un objeto representando la información del contribuyente.
  *
  *   El objeto tiene el siguiente formato:
@@ -125,9 +125,10 @@ async function getContribuyenteBySearch(search, offset = 0) {
  * }
  */
 async function getContribuyenteByRucOrCI(ruc) {
-  if (!ruc || ruc.trim() === "" || ruc.length < 3 || ruc.length > 10) {
+  const regex = new RegExp("^\d{1,8}(?:-\d)?$");
+  if (!ruc || ruc.trim() === "" || !regex.test(ruc)) {
     throw new CustomError(
-      "El parámetro ruc es inválido. Debe tener entre 3 y 10 caracteres."
+      "El parámetro ruc es inválido. Debe tener formato 123456-1 (^\d{1,8}(?:-\d)?$)."
     );
   }
 
@@ -146,7 +147,7 @@ async function getContribuyenteByRucOrCI(ruc) {
 
       if (response.status > 400 && response.status < 500) {
         throw new CustomError(
-          "El parámetro ruc es inválido. Debe tener entre 3 y 11 caracteres.",
+          "El parámetro ruc es inválido. Debe tener formato 123456 (^\d{1,8}(?:-\d)?$).",
           contribuyenteJsonResponse?.message || ""
         );
       }
