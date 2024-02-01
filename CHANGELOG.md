@@ -2,6 +2,15 @@
 
 Todos los cambios notables en esta biblioteca se documentarán en este archivo.
 
+## [0.1.1] - 2024-02-01
+
+### Añadido
+- Constantes MIN_LENGTH y MAX_LENGTH
+
+### Cambios
+- Se analizan las longitudes a partir de las constantes añadidas pasando del máximo limite de 10 a 50.
+- Corrección en comentarios
+
 ## [0.1.0] - 2024-01-30
 
 ### Añadido

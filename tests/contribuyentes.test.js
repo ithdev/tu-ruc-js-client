@@ -7,7 +7,7 @@ describe("Contribuyentes", () => {
         await getContribuyenteBySearch("");
       } catch (error) {
         expect(error.message).toBe(
-          "El parámetro search es inválido. Debe tener entre 3 y 10 caracteres."
+          "El parámetro search es inválido. Debe tener entre 3 y 50 caracteres."
         );
       }
     });
@@ -17,17 +17,17 @@ describe("Contribuyentes", () => {
         await getContribuyenteBySearch("1");
       } catch (error) {
         expect(error.message).toBe(
-          "El parámetro search es inválido. Debe tener entre 3 y 10 caracteres."
+          "El parámetro search es inválido. Debe tener entre 3 y 50 caracteres."
         );
       }
     });
 
-    test("deberia tirar un error si pasamos un string con mas de 10 caracteres como parametro", async () => {
+    test("deberia tirar un error si pasamos un string con mas de 50 caracteres como parametro", async () => {
       try {
-        await getContribuyenteBySearch("12345678901");
+        await getContribuyenteBySearch("Juan Perez Juan Perez Juan Perez Juan Perez Juan Perez Juan Perez Juan Perez Juan Perez Juan Perez Juan Perez Juan Perez Juan Perez Juan Perez Juan Perez");
       } catch (error) {
         expect(error.message).toBe(
-          "El parámetro search es inválido. Debe tener entre 3 y 10 caracteres."
+          "El parámetro search es inválido. Debe tener entre 3 y 50 caracteres."
         );
       }
     });
