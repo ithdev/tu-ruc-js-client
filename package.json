@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "lint": "eslint .",
     "test": "jest"
   },
   "keywords": [
@@ -16,6 +17,7 @@
   "author": "Sebastian Alvarez, Esteban Fernandez, Matias Ramirez",
   "license": "ISC",
   "devDependencies": {
+    "eslint": "^8.56.0",
     "jest": "^29.7.0"
   }
 }
