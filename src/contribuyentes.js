@@ -1,5 +1,5 @@
 const { URL, MAX_LENGTH, MIN_LENGTH } = require("./constants");
-const { CustomError } = require("./errors");
+const { ValidationError, ServerError } = require("./errors");
 
 /**
  * Realiza una búsqueda de contribuyentes por un término específico y opcionalmente con un offset de paginación.
@@ -33,67 +33,92 @@ const { CustomError } = require("./errors");
  * }
  */
 async function getContribuyenteBySearch(search, offset = 0) {
-	if (
-		!search ||
-    search.trim() === "" ||
-    search.length < MIN_LENGTH ||
-    search.length > MAX_LENGTH
-	) {
-		throw new CustomError(
-			`El parámetro search es inválido. Debe tener entre ${MIN_LENGTH} y ${MAX_LENGTH} caracteres.`
-		);
-	}
+  const trimmedSearch = search?.trim();
 
-	if (offset < 0 || isNaN(offset)) {
-		throw new CustomError(
-			"El parámetro offset es inválido. Debe ser un número mayor o igual a 0."
-		);
-	}
+  if (!trimmedSearch) {
+    throw new ValidationError(
+      "El parámetro search es inválido. Debe tener entre 3 y 50 caracteres.",
+      "No se puede realizar una busqueda con un parametro vacio."
+    );
+  }
 
-	try {
-		const response = await fetch(
-			`${URL}/search?search=${encodeURIComponent(search)}&page=${offset}`
-		);
+  if (trimmedSearch.length < MIN_LENGTH || trimmedSearch.length > MAX_LENGTH) {
+    let rule = "";
+    
+    if (trimmedSearch.length < MIN_LENGTH) {
+      rule = "No se puede realizar una busqueda con un parametro menor a 3 caracteres.";
+    }
 
-		const contribuyentesJsonResponse = await response.json();
+    if (trimmedSearch.length > MAX_LENGTH) {
+      rule = "No se puede realizar una busqueda con un parametro mayor a 50 caracteres.";
+    }
 
-		if (response.status !== 200) {
-			if (response.status === 404) {
-				throw new CustomError(
-					"No se encontraron resultados.",
-					contribuyentesJsonResponse?.message || ""
-				);
-			}
+    throw new ValidationError(
+      "El parámetro search es inválido. Debe tener entre 3 y 50 caracteres.",
+      rule
+    );
+  }
 
-			if (response.status > 400 && response.status < 500) {
-				throw new CustomError(
-					`El parámetro search es inválido. Debe tener entre ${MIN_LENGTH} y ${MAX_LENGTH} caracteres.`,
-					contribuyentesJsonResponse?.message || ""
-				);
-			}
+  if (offset < 0 || isNaN(offset)) {
+    throw new ValidationError(
+      "El parámetro offset es inválido. Debe ser un número mayor o igual a 0.",
+      "El cliente envio un offset invalido. Debe ser un numero mayor o igual a 0."
+    );
+  }
 
-			throw new CustomError(
-				"Ocurrió un error al consultar la API. Por favor, intente nuevamente o Contacta con los desarrolladores.",
-				contribuyentesJsonResponse?.message || ""
-			);
-		}
+  try {
+    const response = await fetch(
+      `${URL}/search?search=${encodeURIComponent(trimmedSearch)}&page=${offset}`
+    );
 
-		const contribuyentes = contribuyentesJsonResponse.data?.contribuyentes;
+    const contribuyentesJsonResponse = await response.json();
 
-		if (contribuyentes?.length === 0) {
-			throw new CustomError(
-				"No se encontraron resultados.",
-				contribuyentesJsonResponse?.message || ""
-			);
-		}
+    if (response.status !== 200) {
+      if (response.status >= 400 && response.status < 500) {
+        if (response.status === 404) {
+          throw new ServerError(
+            "No se encontraron resultados.",
+            contribuyentesJsonResponse?.message || "",
+            404,
+            "NOT_FOUND",
+            "El servicio no encontro resultados para la busqueda realizada."
+          );
+        }
 
-		return contribuyentes;
-	} catch (error) {
-		throw new CustomError(
-			"Ocurrió un error al consultar la API. Por favor, intente nuevamente o Contacta con los desarrolladores.",
-			error?.message || error?.toString() || ""
-		);
-	}
+        throw new ServerError(
+          "El parámetro search es inválido. Debe tener entre 3 y 50 caracteres.",
+          contribuyentesJsonResponse?.message || "",
+          response.status,
+          "BAD_REQUEST",
+          "El cliente envio un parametro invalido."
+        );
+      }
+
+      throw new ServerError(
+        "Ocurrió un error al consultar la API. Por favor, intente nuevamente o Contacta con los desarrolladores.",
+        contribuyentesJsonResponse?.message || "",
+        response.status,
+        "INTERNAL_SERVER_ERROR",
+        "El servicio no pudo procesar la solicitud."
+      );
+    }
+
+    const contribuyentes = contribuyentesJsonResponse.data?.contribuyentes;
+
+    if (contribuyentes?.length === 0) {
+      throw new ServerError(
+        "No se encontraron resultados.",
+        contribuyentesJsonResponse?.message || "",
+        404,
+        "NOT_FOUND",
+        "El servicio no encontro resultados para la busqueda realizada."
+      );
+    }
+
+    return contribuyentes;
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -125,58 +150,71 @@ async function getContribuyenteBySearch(search, offset = 0) {
  * }
  */
 async function getContribuyenteByRucOrCI(ruc) {
-	const regex = new RegExp("^\\d{1,8}(?:-\\d+)?$");
-	if (!ruc || ruc.trim() === "" || !regex.test(ruc)) {
-		throw new CustomError(
-			"El parámetro ruc es inválido. Debe tener formato 123456-1 o 123456"
-		);
-	}
+  const regex = new RegExp("^\\d{1,8}(?:-\\d+)?$");
+  if (!ruc || ruc.trim() === "" || !regex.test(ruc)) {
+    throw new ValidationError(
+      "El parámetro ruc es inválido. Debe tener formato 12345 o 123456-1"
+    );
+  }
 
-	try {
-		const response = await fetch(`${URL}/${ruc}`);
+  try {
+    const response = await fetch(`${URL}/${ruc}`);
 
-		const contribuyenteJsonResponse = await response.json();
+    const contribuyenteJsonResponse = await response.json();
 
-		if (response.status !== 200) {
-			if (response.status === 404) {
-				throw new CustomError(
-					"No se encontraron resultados.",
-					contribuyenteJsonResponse?.message || ""
-				);
-			}
+    if (response.status !== 200) {
+      const serverErrorMessages = contribuyenteJsonResponse?.message;
 
-			if (response.status > 400 && response.status < 500) {
-				throw new CustomError(
-					"El parámetro ruc es inválido. Debe tener formato 12345 o 123456-1",
-					contribuyenteJsonResponse?.message || ""
-				);
-			}
+      if (response.status >= 400 && response.status < 500) {
+        if (response.status === 404) {
+          throw new ServerError(
+            serverErrorMessages || "No se encontraron resultados.",
+            contribuyenteJsonResponse?.message || "",
+            404,
+            "NOT_FOUND",
+            "El servicio no encontro resultados para la busqueda realizada."
+          );
+        }
 
-			throw new CustomError(
-				"Ocurrió un error al consultar la API. Por favor, intente nuevamente o Contacta con los desarrolladores.",
-				contribuyenteJsonResponse?.message || ""
-			);
-		}
+        throw new ServerError(
+          serverErrorMessages ||
+            "El parámetro ruc es inválido. Debe tener formato 12345 o 123456-1",
+          serverErrorMessages || "",
+          response.status,
+          "BAD_REQUEST",
+          "El cliente envio un parametro invalido."
+        );
+      }
 
-		const contribuyente = contribuyenteJsonResponse.data;
+      throw new ServerError(
+        serverErrorMessages ||
+          "Ocurrió un error al consultar la API. Por favor, intente nuevamente o Contacta con los desarrolladores.",
+        serverErrorMessages || "",
+        response.status,
+        "INTERNAL_SERVER_ERROR",
+        "El servicio no pudo procesar la solicitud."
+      );
+    }
 
-		if (!contribuyente) {
-			throw new CustomError(
-				"No se encontraron resultados.",
-				contribuyenteJsonResponse?.message || ""
-			);
-		}
+    const contribuyente = contribuyenteJsonResponse.data;
 
-		return contribuyente;
-	} catch (error) {
-		throw new CustomError(
-			"Ocurrió un error al consultar la API. Por favor, intente nuevamente o Contacta con los desarrolladores.",
-			error?.message || error?.toString() || ""
-		);
-	}
+    if (!contribuyente) {
+      throw new ServerError(
+        serverErrorMessages || "No se encontraron resultados.",
+        contribuyenteJsonResponse?.message || "",
+        404,
+        "NOT_FOUND",
+        "El servicio no encontro resultados para la busqueda realizada."
+      );
+    }
+
+    return contribuyente;
+  } catch (error) {
+    throw error;
+  }
 }
 
 module.exports = {
-	getContribuyenteBySearch,
-	getContribuyenteByRucOrCI,
+  getContribuyenteBySearch,
+  getContribuyenteByRucOrCI,
 };
