@@ -147,7 +147,7 @@ async function getContribuyenteByRucOrCI(ruc) {
 
       if (response.status > 400 && response.status < 500) {
         throw new CustomError(
-          "El parámetro ruc es inválido. Debe tener formato 123456 (^\d{1,8}(?:-\d)?$).",
+          "El parámetro ruc es inválido. Debe tener formato 12345 o 123456-1",
           contribuyenteJsonResponse?.message || ""
         );
       }
