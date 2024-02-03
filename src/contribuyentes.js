@@ -125,7 +125,7 @@ async function getContribuyenteBySearch(search, offset = 0) {
  * }
  */
 async function getContribuyenteByRucOrCI(ruc) {
-  const regex = new RegExp("^\d{1,8}(?:-\d)?$");
+  const regex = new RegExp("^\\d{1,8}(?:-\\d+)?$");
   if (!ruc || ruc.trim() === "" || !regex.test(ruc)) {
     throw new CustomError(
       "El parámetro ruc es inválido. Debe tener formato 123456-1 (^\d{1,8}(?:-\d)?$)."
