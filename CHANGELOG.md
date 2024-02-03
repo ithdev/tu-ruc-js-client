@@ -11,6 +11,7 @@ Todos los cambios notables en esta biblioteca se documentarán en este archivo.
 ### Cambiado
 
 - Se cambia el manejo de error mas especifico son los errores
+- Se mejora la validacion de la funcion getContribuyenteBySearch
 
 ### Corregido
 
