@@ -1,12 +1,12 @@
-const { URL, MAX_LENGTH, MIN_LENGTH } = require("./constants");
-const { ValidationError, ServerError } = require("./errors");
+const { URL, MAX_LENGTH, MIN_LENGTH } = require('./constants');
+const { ValidationError, ServerError } = require('./errors');
 
 /**
  * Realiza una búsqueda de contribuyentes por un término específico y opcionalmente con un offset de paginación.
  *
  * @param {string} search - Término de búsqueda (entre 3 y 50 caracteres).
  * @param {number} [offset=0] - Offset de paginación, por defecto es 0.
- * @returns {Promise<Array>} - Una promesa que se resuelve con un array de contribuyentes si la búsqueda es exitosa.
+ * @return {Promise<Array>} - Una promesa que se resuelve con un array de contribuyentes si la búsqueda es exitosa.
  *
  *  Cada contribuyente tiene el siguiente formato:
  *   {
@@ -26,6 +26,7 @@ const { ValidationError, ServerError } = require("./errors");
  *
  * @example
  * try {
+ // eslint-disable-next-line max-len
  *   const contribuyentes = await getContribuyenteBySearch('término-de-búsqueda', 1);
  *   console.log(contribuyentes);
  * } catch (error) {
@@ -37,38 +38,38 @@ async function getContribuyenteBySearch(search, offset = 0) {
 
   if (!trimmedSearch) {
     throw new ValidationError(
-      "El parámetro search es inválido. Debe tener entre 3 y 50 caracteres.",
-      "No se puede realizar una busqueda con un parametro vacio."
+        'El parámetro search es inválido. Debe tener entre 3 y 50 caracteres.',
+        'No se puede realizar una busqueda con un parametro vacio.',
     );
   }
 
   if (trimmedSearch.length < MIN_LENGTH || trimmedSearch.length > MAX_LENGTH) {
-    let rule = "";
-    
+    let rule = '';
+
     if (trimmedSearch.length < MIN_LENGTH) {
-      rule = "No se puede realizar una busqueda con un parametro menor a 3 caracteres.";
+      rule = 'No se puede realizar una busqueda con un parametro menor a 3 caracteres.';
     }
 
     if (trimmedSearch.length > MAX_LENGTH) {
-      rule = "No se puede realizar una busqueda con un parametro mayor a 50 caracteres.";
+      rule = 'No se puede realizar una busqueda con un parametro mayor a 50 caracteres.';
     }
 
     throw new ValidationError(
-      "El parámetro search es inválido. Debe tener entre 3 y 50 caracteres.",
-      rule
+        'El parámetro search es inválido. Debe tener entre 3 y 50 caracteres.',
+        rule,
     );
   }
 
   if (offset < 0 || isNaN(offset)) {
     throw new ValidationError(
-      "El parámetro offset es inválido. Debe ser un número mayor o igual a 0.",
-      "El cliente envio un offset invalido. Debe ser un numero mayor o igual a 0."
+        'El parámetro offset es inválido. Debe ser un número mayor o igual a 0.',
+        'El cliente envio un offset invalido. Debe ser un numero mayor o igual a 0.',
     );
   }
 
   try {
     const response = await fetch(
-      `${URL}/search?search=${encodeURIComponent(trimmedSearch)}&page=${offset}`
+        `${URL}/search?search=${encodeURIComponent(trimmedSearch)}&page=${offset}`,
     );
 
     const contribuyentesJsonResponse = await response.json();
@@ -77,29 +78,29 @@ async function getContribuyenteBySearch(search, offset = 0) {
       if (response.status >= 400 && response.status < 500) {
         if (response.status === 404) {
           throw new ServerError(
-            "No se encontraron resultados.",
-            contribuyentesJsonResponse?.message || "",
-            404,
-            "NOT_FOUND",
-            "El servicio no encontro resultados para la busqueda realizada."
+              'No se encontraron resultados.',
+              contribuyentesJsonResponse?.message || '',
+              404,
+              'NOT_FOUND',
+              'El servicio no encontro resultados para la busqueda realizada.',
           );
         }
 
         throw new ServerError(
-          "El parámetro search es inválido. Debe tener entre 3 y 50 caracteres.",
-          contribuyentesJsonResponse?.message || "",
-          response.status,
-          "BAD_REQUEST",
-          "El cliente envio un parametro invalido."
+            'El parámetro search es inválido. Debe tener entre 3 y 50 caracteres.',
+            contribuyentesJsonResponse?.message || '',
+            response.status,
+            'BAD_REQUEST',
+            'El cliente envio un parametro invalido.',
         );
       }
 
       throw new ServerError(
-        "Ocurrió un error al consultar la API. Por favor, intente nuevamente o Contacta con los desarrolladores.",
-        contribuyentesJsonResponse?.message || "",
-        response.status,
-        "INTERNAL_SERVER_ERROR",
-        "El servicio no pudo procesar la solicitud."
+          'Ocurrió un error al consultar la API. Por favor, intente nuevamente o Contacta con los desarrolladores.',
+          contribuyentesJsonResponse?.message || '',
+          response.status,
+          'INTERNAL_SERVER_ERROR',
+          'El servicio no pudo procesar la solicitud.',
       );
     }
 
@@ -107,11 +108,11 @@ async function getContribuyenteBySearch(search, offset = 0) {
 
     if (contribuyentes?.length === 0) {
       throw new ServerError(
-        "No se encontraron resultados.",
-        contribuyentesJsonResponse?.message || "",
-        404,
-        "NOT_FOUND",
-        "El servicio no encontro resultados para la busqueda realizada."
+          'No se encontraron resultados.',
+          contribuyentesJsonResponse?.message || '',
+          404,
+          'NOT_FOUND',
+          'El servicio no encontro resultados para la busqueda realizada.',
       );
     }
 
@@ -125,7 +126,7 @@ async function getContribuyenteBySearch(search, offset = 0) {
  * Obtiene información detallada sobre un contribuyente específico a través de su número de RUC o CI.
  *
  * @param {string} ruc - Número de RUC o CI del contribuyente (^\d{1,8}(?:-\d)?$).
- * @returns {Promise<Object>} - Una promesa que se resuelve con un objeto representando la información del contribuyente.
+ * @return {Promise<Object>} - Una promesa que se resuelve con un objeto representando la información del contribuyente.
  *
  *   El objeto tiene el siguiente formato:
  *   {
@@ -150,10 +151,10 @@ async function getContribuyenteBySearch(search, offset = 0) {
  * }
  */
 async function getContribuyenteByRucOrCI(ruc) {
-  const regex = new RegExp("^\\d{1,8}(?:-\\d+)?$");
-  if (!ruc || ruc.trim() === "" || !regex.test(ruc)) {
+  const regex = new RegExp('^\\d{1,8}(?:-\\d+)?$');
+  if (!ruc || ruc.trim() === '' || !regex.test(ruc)) {
     throw new ValidationError(
-      "El parámetro ruc es inválido. Debe tener formato 12345 o 123456-1"
+        'El parámetro ruc es inválido. Debe tener formato 12345 o 123456-1',
     );
   }
 
@@ -168,31 +169,31 @@ async function getContribuyenteByRucOrCI(ruc) {
       if (response.status >= 400 && response.status < 500) {
         if (response.status === 404) {
           throw new ServerError(
-            serverErrorMessages || "No se encontraron resultados.",
-            contribuyenteJsonResponse?.message || "",
-            404,
-            "NOT_FOUND",
-            "El servicio no encontro resultados para la busqueda realizada."
+              serverErrorMessages || 'No se encontraron resultados.',
+              contribuyenteJsonResponse?.message || '',
+              404,
+              'NOT_FOUND',
+              'El servicio no encontro resultados para la busqueda realizada.',
           );
         }
 
         throw new ServerError(
-          serverErrorMessages ||
-            "El parámetro ruc es inválido. Debe tener formato 12345 o 123456-1",
-          serverErrorMessages || "",
-          response.status,
-          "BAD_REQUEST",
-          "El cliente envio un parametro invalido."
+            serverErrorMessages ||
+            'El parámetro ruc es inválido. Debe tener formato 12345 o 123456-1',
+            serverErrorMessages || '',
+            response.status,
+            'BAD_REQUEST',
+            'El cliente envio un parametro invalido.',
         );
       }
 
       throw new ServerError(
-        serverErrorMessages ||
-          "Ocurrió un error al consultar la API. Por favor, intente nuevamente o Contacta con los desarrolladores.",
-        serverErrorMessages || "",
-        response.status,
-        "INTERNAL_SERVER_ERROR",
-        "El servicio no pudo procesar la solicitud."
+          serverErrorMessages ||
+          'Ocurrió un error al consultar la API. Por favor, intente nuevamente o Contacta con los desarrolladores.',
+          serverErrorMessages || '',
+          response.status,
+          'INTERNAL_SERVER_ERROR',
+          'El servicio no pudo procesar la solicitud.',
       );
     }
 
@@ -200,11 +201,11 @@ async function getContribuyenteByRucOrCI(ruc) {
 
     if (!contribuyente) {
       throw new ServerError(
-        serverErrorMessages || "No se encontraron resultados.",
-        contribuyenteJsonResponse?.message || "",
-        404,
-        "NOT_FOUND",
-        "El servicio no encontro resultados para la busqueda realizada."
+          serverErrorMessages || 'No se encontraron resultados.',
+          contribuyenteJsonResponse?.message || '',
+          404,
+          'NOT_FOUND',
+          'El servicio no encontro resultados para la busqueda realizada.',
       );
     }
 
