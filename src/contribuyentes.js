@@ -155,6 +155,7 @@ async function getContribuyenteByRucOrCI(ruc) {
   if (!ruc || ruc.trim() === '' || !regex.test(ruc)) {
     throw new ValidationError(
         'El parámetro ruc es inválido. Debe tener formato 12345 o 123456-1',
+        'El cliente envio un parametro invalido.',
     );
   }
 
