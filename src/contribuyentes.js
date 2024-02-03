@@ -163,9 +163,9 @@ async function getContribuyenteByRucOrCI(ruc) {
 
     const contribuyenteJsonResponse = await response.json();
 
-    if (response.status !== 200) {
-      const serverErrorMessages = contribuyenteJsonResponse?.message;
+    const serverErrorMessages = contribuyenteJsonResponse?.message;
 
+    if (response.status !== 200) {
       if (response.status >= 400 && response.status < 500) {
         if (response.status === 404) {
           throw new ServerError(
