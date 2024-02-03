@@ -1,6 +1,6 @@
 {
   "name": "tu-ruc-js-client",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Cliente Javascript para la API de TuRuc Paraguay",
   "main": "src/index.js",
   "scripts": {
@@ -13,7 +13,8 @@
     "turuc",
     "paraguay",
     "razon",
-    "social"
+    "set"
+
   ],
   "author": "Sebastian Alvarez, Esteban Fernandez, Matias Ramirez",
   "license": "ISC",
