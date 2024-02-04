@@ -1,21 +1,26 @@
 {
   "name": "tu-ruc-js-client",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Cliente Javascript para la API de TuRuc Paraguay",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "lint": "eslint . --ext .js",
+    "lint-fix": "eslint . --ext .js --fix",
     "test": "jest"
   },
   "keywords": [
     "turuc",
     "paraguay",
     "razon",
-    "social"
+    "set"
+
   ],
   "author": "Sebastian Alvarez, Esteban Fernandez, Matias Ramirez",
   "license": "ISC",
   "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-config-google": "^0.14.0",
     "jest": "^29.7.0"
   }
 }

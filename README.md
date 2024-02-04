@@ -18,7 +18,7 @@ Importa las funciones necesarias en tu código:
 const {
   getContribuyenteBySearch,
   getContribuyenteByRucOrCI,
-} = require('nombre-de-la-biblioteca');
+} = require('tu-ruc-js-client');
 ```
 
 ## Uso

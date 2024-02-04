@@ -1,7 +1,7 @@
 const {
   getContribuyenteBySearch,
   getContribuyenteByRucOrCI,
-} = require("./contribuyentes");
+} = require('./contribuyentes');
 
 module.exports = {
   getContribuyenteBySearch,
