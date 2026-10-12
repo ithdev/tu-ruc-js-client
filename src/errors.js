@@ -55,7 +55,7 @@ class ValidationError extends Error {
  * @extends Error
  * @param {string} message - El mensaje de error que describe el error del lado del servidor.
  * @param {string} serverMessage - El mensaje de error específico del servidor.
- * @param {number} [statusCode=500] - El código de estado HTTP asociado con el error.
+ * @param {number} [statusCode] - El código de estado HTTP asociado con el error; por defecto, 500.
  * @param {string} [errorCode] - Un código de error opcional para identificar el tipo de error.
  * @param {string} [debugMessage] - Un mensaje de depuración opcional para el modo de desarrollo.
  */
@@ -64,7 +64,7 @@ class ServerError extends Error {
    * Crea una instancia de ServerError.
    * @param {string} message - El mensaje de error que describe el error del lado del servidor.
    * @param {string} serverMessage - El mensaje de error específico del servidor.
-   * @param {number} [statusCode=500] - El código de estado HTTP asociado con el error.
+   * @param {number} [statusCode] - El código de estado HTTP asociado con el error; por defecto, 500.
    * @param {string} [errorCode] - Un código de error opcional para identificar el tipo de error.
    * @param {string} [debugMessage] - Un mensaje de depuración opcional para el modo de desarrollo.
    * @constructor
