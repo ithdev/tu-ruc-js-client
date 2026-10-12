@@ -1,22 +1,20 @@
-# Tu Ruc | Paraguay
+# Tu RUC | Paraguay
 
-Cliente Javascript para la API de TuRuc Paraguay
+Cliente JavaScript para la API de [TuRuc](https://turuc.com.py/). Busca
+contribuyentes por nombre, RUC o CI, y consulta los datos de un contribuyente
+por su RUC o CI.
 
-Esta biblioteca proporciona funciones para realizar consultas a una API de contribuyentes. Permite buscar contribuyentes por un término de búsqueda y paginación, así como obtener información detallada sobre un contribuyente específico a través de su número de RUC o CI.
+## Requisitos
+
+- Node.js 22 o superior.
+- CommonJS (`require`). El cliente usa el `fetch` nativo de Node.js y no
+  instala dependencias adicionales.
 
 ## Instalación
-
-La versión 0.2.0 requiere **Node.js 22 o superior**. Se verifica en CI con las
-versiones mantenidas de Node.js 22 y 24 LTS. El cliente usa `fetch` nativo y
-CommonJS, sin dependencias de ejecución adicionales.
-
-Para utilizar esta biblioteca en tu proyecto, sigue estos pasos:
 
 ```bash
 npm install tu-ruc-js-client
 ```
-
-Importa las funciones necesarias en tu código:
 
 ```javascript
 const { getContribuyenteBySearch, getContribuyenteByRucOrCI } = require('tu-ruc-js-client');
@@ -26,18 +24,17 @@ const { getContribuyenteBySearch, getContribuyenteByRucOrCI } = require('tu-ruc-
 
 ### `getContribuyenteBySearch(search, offset)`
 
-Esta función realiza una búsqueda de contribuyentes por un término específico y opcionalmente con un offset de paginación.
+Busca contribuyentes cuyo nombre, RUC o CI coincida con `search`.
 
-**Parámetros:**
+- `search` (texto): de 3 a 50 caracteres, sin contar los espacios de los
+  extremos.
+- `offset` (número, opcional): página de resultados, desde 0. Por defecto, 0.
 
-- `search` (cadena): Término de búsqueda (entre 3 y 50 caracteres).
-- `offset` (número opcional): Offset de paginación, por defecto es 0.
-
-**Ejemplo de Uso:**
+Devuelve un array de contribuyentes.
 
 ```javascript
 try {
-  const contribuyentes = await getContribuyenteBySearch('término-de-búsqueda', 1);
+  const contribuyentes = await getContribuyenteBySearch('juan perez');
   console.log(contribuyentes);
 } catch (error) {
   console.error(error.message);
@@ -46,80 +43,64 @@ try {
 
 ### `getContribuyenteByRucOrCI(ruc)`
 
-Esta función obtiene información detallada sobre un contribuyente específico a través de su número de RUC o CI.
+Obtiene los datos de un contribuyente.
 
-**Parámetros:**
+- `ruc` (texto): CI de hasta 8 dígitos o RUC con su dígito verificador, por
+  ejemplo `80024191` o `80024191-6`.
 
-- `ruc` (cadena): Número de RUC o CI del contribuyente (entre 3 y 10 caracteres).
-
-**Ejemplo de Uso:**
+Devuelve un objeto con los datos del contribuyente.
 
 ```javascript
 try {
-  const contribuyente = await getContribuyenteByRucOrCI('1234567890');
+  const contribuyente = await getContribuyenteByRucOrCI('80024191-6');
   console.log(contribuyente);
 } catch (error) {
   console.error(error.message);
 }
 ```
 
-## Desarrollo
+### Datos del contribuyente
 
-Usa Node.js **24.21.0**, indicado en `.node-version`, y npm:
+Ambas funciones devuelven contribuyentes con, al menos, estos campos:
 
-```bash
-npm ci
-npm run lint
-npm run format:check
-npm test -- --runInBand
-npm run test:package
+| Campo         | Tipo   | Descripción                             |
+| ------------- | ------ | --------------------------------------- |
+| `doc`         | número | Número de documento (CI)                |
+| `razonSocial` | texto  | Nombre o razón social                   |
+| `dv`          | número | Dígito verificador del RUC              |
+| `ruc`         | texto  | RUC completo, con el dígito verificador |
+
+## Errores
+
+Las funciones rechazan la promesa con uno de estos errores. Distínguelos por
+`error.name`:
+
+| `name`            | Cuándo ocurre                                                | Propiedades útiles                                    |
+| ----------------- | ------------------------------------------------------------ | ----------------------------------------------------- |
+| `ValidationError` | Los parámetros no cumplen las reglas; no se consulta la API. | `message`, `rule`                                     |
+| `ServerError`     | La API responde con un error o no encuentra resultados.      | `message`, `statusCode`, `errorCode`, `serverMessage` |
+
+Cuando no hay resultados, `statusCode` es `404` y `errorCode` es `NOT_FOUND`.
+Un fallo de red se propaga como el error original de `fetch`.
+
+```javascript
+try {
+  await getContribuyenteByRucOrCI('80024191-6');
+} catch (error) {
+  if (error.name === 'ServerError' && error.errorCode === 'NOT_FOUND') {
+    console.log('No existe un contribuyente con ese RUC.');
+  } else {
+    throw error;
+  }
+}
 ```
 
-Las pruebas ejercitan las funciones exportadas y simulan únicamente la frontera
-HTTP; no consultan el servicio en producción. `test:package` crea un tarball,
-lo instala sin dependencias de desarrollo en un directorio temporal y comprueba
-que sus funciones públicas puedan cargarse con `require()`.
+## Cambios
 
-[Oxlint](https://oxc.rs/docs/guide/usage/linter.html) 1.87.0 comprueba errores de
-JavaScript, pruebas Jest y comentarios JSDoc en `.oxlintrc.json`.
-[Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) 0.72.0 aplica el formato de
-JavaScript, JSON, YAML y Markdown mediante `.oxfmtrc.json`. Para corregir problemas
-automáticamente y formatear el repositorio:
-
-```bash
-npm run lint:fix
-npm run format
-```
-
-Las diez comprobaciones JSDoc explícitas verifican documentación, parámetros,
-tipos y contratos de retorno: cinco son nativas y
-`eslint-plugin-jsdoc` 65.3.1 aporta `require-jsdoc`, `check-syntax`, `valid-types`
-y `check-param-names`, además de `require-returns-check`. La [integración de plugins JS de Oxlint](https://oxc.rs/docs/guide/usage/linter/js-plugins.html)
-está en alpha; las versiones se fijan y se verifican con Node.js 22 y 24.
-
-`lint` ejecuta Oxlint y después ESLint 10.12.0, limitado en `eslint.config.mjs` a
-`camelcase`, `no-invalid-this` y `@stylistic/spaced-comment`. Esta última utiliza
-`@stylistic/eslint-plugin` 5.10.0, la [sustitución mantenida](https://eslint.style/rules/spaced-comment)
-de la regla deprecada de ESLint. Esta [combinación admitida por Oxlint](https://oxc.rs/docs/guide/usage/linter/migrate-from-eslint.html#running-oxlint-and-eslint-together)
-conserva las tres reglas heredadas que no tienen equivalente nativo ni son
-resueltas por Oxfmt. Ambas comprobaciones cubren los archivos `.js`, `.cjs` y
-`.mjs`, incluida la configuración. El conjunto de herramientas requiere Node.js
-22.22.2+ o 24.15.0+; el mínimo de consumo del cliente sigue siendo Node.js 22.
-
-Oxfmt sustituye las reglas heredadas de espaciado, comillas e indentación.
-
-## Publicación
-
-Los push a `main` y las pull requests ejecutan lint, formato, pruebas y verificación del
-paquete con Node.js 22 y 24. Para publicar, ejecuta manualmente el workflow
-`CI/CD` desde `main`, con una versión nueva en `package.json` y
-`package-lock.json`, el registro de cambios actualizado y el secreto
-`NPM_TOKEN` configurado. La publicación sólo comienza cuando ambas verificaciones
-terminan correctamente. Después de publicar en npm, el workflow etiqueta el
-commit verificado y crea su release en GitHub.
+Consulta [CHANGELOG.md](CHANGELOG.md) para conocer los cambios de cada versión.
 
 ## Contribuciones
 
-Si encuentras algún problema o tienes sugerencias de mejora, no dudes en contribuir al desarrollo de esta biblioteca. Abre un problema o envía una solicitud de extracción en [GitHub](https://github.com/ithdev/tu-ruc-js-client).
-
-¡Gracias por utilizar esta biblioteca!
+Si encuentras un problema o tienes una sugerencia, abre un issue o envía un pull
+request en [GitHub](https://github.com/ithdev/tu-ruc-js-client). Para preparar el
+entorno de desarrollo, consulta [CONTRIBUTING.md](CONTRIBUTING.md).
