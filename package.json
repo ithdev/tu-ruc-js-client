@@ -10,6 +10,10 @@
   ],
   "license": "ISC",
   "author": "Sebastian Alvarez, Esteban Fernandez, Matias Ramirez",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ithdev/tu-ruc-js-client.git"
+  },
   "files": [
     "src/",
     "CHANGELOG.md"
