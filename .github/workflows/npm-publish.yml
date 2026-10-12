@@ -1,74 +1,56 @@
 name: CI/CD
 
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
-jobs:
-  tag-and-release:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Get Version
-        id: get-version
-        uses: beaconbrigade/package-json-version@v0.3.1
-        with:
-          path: .
-      - name: Create Tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ steps.get-version.outputs.version }}
-          REPOSITORY: ${{ github.repository }}
-          PROJECT_NAME: Tu RUC Js Client
-        run: |
-          echo "Creating tag $VERSION on $REPOSITORY"
-          git config --local user.email "develop.ith@gmail.com"
-          git config --local user.name "dev"
-          git tag -a $VERSION -m "$PROJECT_NAME Release $VERSION"
-          git push origin $VERSION
-      - name: Create Release
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            VERSION: ${{ steps.get-version.outputs.version }}
-            REPOSITORY: ${{ github.repository }}
-            PROJECT_NAME: Tu RUC Js Client
-        run: |
-            echo "Creating Release $VERSION"
-            CODE=$(
-                curl  --location https://api.github.com/repos/$REPOSITORY/releases --write-out '%{http_code}' --output /dev/null \
-                    --header "Accept: application/vnd.github+json" \
-                    --header "Authorization: Bearer $GITHUB_TOKEN" --data "{\"tag_name\": \"$VERSION\",\"target_commitish\": \"main\",\"name\": \"$PROJECT_NAME Release $VERSION\",\"body\": \"$PROJECT_NAME Release $VERSION\",\"draft\": false,\"prerelease\": false,\"generate_release_notes\":false}"
-            )
-            if [ $CODE -eq 201 ];
-            then
-                echo "SUCCESS - $CODE"
-                exit 0
-            else
-                echo "FAILURE - $CODE"
-                exit 1
-            fi
+permissions:
+  contents: read
 
-  build:
-    needs: tag-and-release
+jobs:
+  verify:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 18
+          node-version: ${{ matrix.node }}
+          cache: npm
       - run: npm ci
-      - run: npm test
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test -- --runInBand
+      - run: npm run test:package
 
   publish:
-    needs: build
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: verify
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 18
+          node-version-file: .node-version
           registry-url: https://registry.npmjs.org/
       - run: npm ci
-      - run: npm publish
+      - name: Publish package
+        run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create tag and release for the verified commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git tag -a "$version" "$GITHUB_SHA" -m "Tu RUC JS Client $version"
+          git push origin "$version"
+          gh release create "$version" --verify-tag --title "Tu RUC JS Client $version" --notes "Tu RUC JS Client $version"
