@@ -58,7 +58,15 @@ Para publicar:
 
 1. Sube la versión en `package.json` y `package-lock.json`.
 2. Actualiza [CHANGELOG.md](CHANGELOG.md).
-3. Comprueba que el secreto `NPM_TOKEN` esté configurado.
+3. Comprueba que el paquete tenga configurado en npm este workflow como
+   [trusted publisher](https://docs.npmjs.com/trusted-publishers). Un dueño del
+   paquete lo configura una sola vez:
+
+   ```bash
+   npm trust github tu-ruc-js-client --repo ithdev/tu-ruc-js-client \
+     --file npm-publish.yml --allow-publish
+   ```
+
 4. Ejecuta manualmente el workflow `CI/CD` desde `main`.
 
 La publicación empieza solo cuando terminan bien las verificaciones. Después de
