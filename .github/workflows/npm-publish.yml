@@ -43,8 +43,6 @@ jobs:
       - run: npm ci
       - name: Publish package
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create tag and release for the verified commit
         env:
           GH_TOKEN: ${{ github.token }}
